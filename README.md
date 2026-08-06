@@ -2,7 +2,11 @@
 
 *a garden that sings*
 
-**Play it now: https://claude.ai/code/artifact/45ff353d-dc5b-4f7a-b42a-c1a96e833ede**
+**Play it now: https://ecuzmici.github.io/experiment/**
+
+(also mirrored as a [Claude artifact](https://claude.ai/code/artifact/45ff353d-dc5b-4f7a-b42a-c1a96e833ede) —
+but the GitHub Pages link above is the full experience, including shareable
+garden URLs)
 
 <p align="center">
   <img src="shots/golden-hour.png" width="45%" alt="Seedsong at golden hour — glowing flowers under a violet sky">
@@ -66,15 +70,15 @@ python3 -m http.server 8000
 
 or just open `index.html` in a browser.
 
-### Deploying to your own URL
+### Hosting
 
-The whole app is the single `index.html`, so any static host works. A Vercel
-deploy was attempted from this session but the connected integration token
-isn't allowed to create new projects — from the Vercel dashboard (or any
-machine with the CLI): `npx vercel deploy --prod` inside this repo, done.
-Note: the shareable-garden-URL feature works best on a plain static host;
-inside the Claude artifact viewer the garden still grows, sings, and saves
-locally, but the address bar isn't writable there.
+The live site is GitHub Pages, serving the `gh-pages` branch. To ship an
+update, push the change here and run the "Publish to GitHub Pages" workflow
+from the Actions tab (it mirrors this branch into `gh-pages`) — or simply
+`git push origin HEAD:gh-pages`.
+
+The whole app is the single `index.html`, so any static host works just as
+well (`npx vercel deploy --prod`, Netlify Drop, Cloudflare Pages, …).
 
 ---
 
