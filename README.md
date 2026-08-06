@@ -12,6 +12,48 @@ garden URLs)
   <img src="shots/golden-hour.png" width="45%" alt="Seedsong at golden hour — glowing flowers under a violet sky">
   <img src="shots/night.png" width="45%" alt="Seedsong at night — crescent moon, stars, and fireflies among the blooms">
 </p>
+<p align="center">
+  <img src="shots/rain.png" width="45%" alt="Rain falling over the luminous garden">
+  <img src="shots/aurora.png" width="45%" alt="An aurora night over the meadow">
+</p>
+
+## 🌍 The Commons
+
+Tap the globe button (or open
+[`#commons`](https://ecuzmici.github.io/experiment/#commons)) to step into
+**the commons** — a single garden shared by everyone in the world. Every seed
+planted there is planted for everyone; stand still for a minute and you may
+watch a stranger's flower sprout in front of you. Tap it to see when a
+wanderer left it there. The meadow keeps its five thousand newest seeds.
+
+(Backed by a free Supabase table with insert-and-look-only row security — no
+accounts, no names, just seeds.)
+
+> **Note on the API key in `index.html`:** that is Supabase's *publishable*
+> anon key, which is designed to ship in client-side code — every visitor's
+> browser receives it either way. All safety lives in Postgres Row Level
+> Security: the anon role can insert a seed (range-checked) and read seeds,
+> nothing else. The service key is not in this repo. Supabase's security
+> advisors report zero findings on this project.
+
+## A living world
+
+- **Weather.** Sometimes it rains. The sky hushes, the sun hides, rain
+  patters into the soundscape, and every plant grows lush and fast — plants
+  love rain. In a storm, distant thunder rolls under the music.
+- **Pollinators & evolution.** Butterflies work the garden by day, pale moths
+  by night, carrying pollen bloom to bloom. A seed that lands between two
+  flowers becomes their **hybrid child** — mixed genes, small mutations — and
+  its field-guide card shows the lineage. Pollinated plants occasionally cast
+  seeds of their own: leave the garden alone and it gardens itself.
+- **Aurora nights.** Some nights, if you're lucky, curtains of light.
+- **Living harmony.** The drone underneath now breathes through a slow chord
+  progression, so the flowers' notes form real harmony that never resolves
+  quite the same way. At dawn, a songbird may land on your tallest flower and
+  answer the garden.
+- **Postcards.** The camera button presses the current moment into a
+  1080×1350 postcard — stamped with your garden's generated name — and hands
+  it to your phone's share sheet.
 
 Touch the ground and a seed takes root. Every plant that grows is a
 one-of-a-kind species — its shape, colors, bloom, and voice are all grown from
