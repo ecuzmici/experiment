@@ -25,6 +25,7 @@
   canvas { display: block; width: 100%; height: 100%; touch-action: none; }
   #title {
     position: fixed; top: calc(14px + env(safe-area-inset-top)); left: calc(18px + var(--sal));
+    max-width: calc(100vw - 248px - var(--sal) - var(--sar));
     color: #e8e4da; pointer-events: none;
     transition: opacity 2s ease;
   }
@@ -297,6 +298,10 @@ async function commonsFetch(initial) {
     if (commonsKnown.has(row.id)) continue;
     commonsKnown.add(row.id);
     const born = new Date(row.created_at).getTime();
+    // a poll can race our own POST's response: recognize our plant by value
+    const mine = plants.find(q => !q.dying && q.seed === (row.seed >>> 0)
+      && Math.abs(q.xF - row.x) <= 0.0015 && Math.abs(q.yF - row.y) <= 0.0015);
+    if (mine) { mine.bornAt = born; continue; }
     const age = (Date.now() - born) / 1000;
     const p = plantAt(clamp(row.x, 0, 1), clamp(row.y, 0, 1), row.seed >>> 0, age > 90,
       row.pa == null ? null : row.pa >>> 0, row.pb == null ? null : row.pb >>> 0);
@@ -324,12 +329,20 @@ async function commonsCount() {
 function commonsPush(p) {
   const body = { x: Math.round(p.xF * 1000) / 1000, y: Math.round(p.yF * 1000) / 1000, seed: p.seed };
   if (p.pa != null && p.pb != null) { body.pa = p.pa; body.pb = p.pb; }
-  fetch(SB_URL + '/rest/v1/plants', {
+  fetch(SB_URL + '/rest/v1/plants?select=id,created_at', {
     method: 'POST',
-    headers: Object.assign(sbHeaders(true), { Prefer: 'return=minimal' }),
+    headers: Object.assign(sbHeaders(true), { Prefer: 'return=representation' }),
     body: JSON.stringify(body)
-  }).then(r => { if (!r.ok) throw new Error(); if (commonsTotal != null) commonsTotal++; })
-    .catch(() => toast('the wind swallowed your seed — it grows only here'));
+  }).then(async r => {
+    if (!r.ok) throw new Error();
+    // learn our own row's id so the next poll doesn't echo it back as a stranger's
+    const rows = await r.json();
+    if (rows && rows[0]) {
+      commonsKnown.add(rows[0].id);
+      p.bornAt = new Date(rows[0].created_at).getTime();
+    }
+    if (commonsTotal != null) commonsTotal++;
+  }).catch(() => toast('the wind swallowed your seed — it grows only here'));
 }
 async function enterCommons() {
   commonsMode = true;
@@ -922,11 +935,15 @@ function weatherTarget() {
   return vnoise(weatherClock() * 0.008 + (gardenSeed % 977)) > 0.63 ? 1 : 0;
 }
 function updateWeather(dt) {
-  rainAmt += (weatherTarget() - rainAmt) * Math.min(1, dt / 5);
-  if (rainAmt < 0.004) rainAmt = 0;
+  const tgt = weatherTarget();
+  rainAmt += (tgt - rainAmt) * Math.min(1, dt / 5);
+  // dead-band only on fade-out: at 60fps the onset increment is smaller
+  // than the epsilon and an unconditional snap would keep rain at zero
+  if (tgt === 0 && rainAmt < 0.004) rainAmt = 0;
+  rainAmt = clamp(rainAmt, 0, 1);
   const w = vnoise(weatherClock() * 0.008 + (gardenSeed % 977));
   stormAmt = clamp((w - 0.8) * 6, 0, 1) * rainAmt;
-  const want = Math.round(rainAmt * 90);
+  const want = Math.max(0, Math.round(rainAmt * 90));
   while (rainDrops.length < want) rainDrops.push({ x: Math.random() * W, y: Math.random() * H, v: 520 + Math.random() * 260, l: 9 + Math.random() * 12 });
   if (rainDrops.length > want) rainDrops.length = want;
   for (const d of rainDrops) {
@@ -1626,7 +1643,9 @@ function drawParticles(dt, dark) {
 let last = performance.now();
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (now - last) / 1000);
+  // clamp below too: the first rAF timestamp can precede the parse-time
+  // performance.now(), and a negative dt runs every integrator backwards
+  const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
   last = now;
   simT += dt;
   const p = phaseNow();
